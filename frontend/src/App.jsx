@@ -3,6 +3,7 @@ import { Room, RoomEvent } from "livekit-client";
 import Visualizer from "./components/Visualizer.jsx";
 import Transcript from "./components/Transcript.jsx";
 import Summary from "./components/Summary.jsx";
+import { AgentIcon, EndCallIcon, HeadsetIcon, MicIcon, MicOffIcon } from "./components/Icons.jsx";
 
 const ROLE_LABELS = {
   receptionist: "Receptionist",
@@ -25,6 +26,7 @@ function App() {
   const roomRef = useRef(null);
   const audioCtxRef = useRef(null);
   const segmentsRef = useRef(new Map());
+  const roleRef = useRef(null);
   const callStartRef = useRef(0);
   const timerRef = useRef(null);
 
@@ -38,10 +40,15 @@ function App() {
   );
 
   function applyRole(metadata, participant) {
-    if (!participant?.isAgent || !metadata) return;
+    // The agent is the only remote participant in a support call, so any
+    // participant metadata carrying a known role is the agent's.
+    if (!metadata) return;
     try {
       const { role: parsed } = JSON.parse(metadata);
-      if (ROLE_LABELS[parsed]) setRole(ROLE_LABELS[parsed]);
+      if (ROLE_LABELS[parsed]) {
+        setRole(ROLE_LABELS[parsed]);
+        roleRef.current = ROLE_LABELS[parsed];
+      }
     } catch {
       /* ignore malformed metadata */
     }
@@ -52,6 +59,7 @@ function App() {
       !!participant &&
       participant.identity === roomRef.current?.localParticipant.identity;
     const who = isUser ? "user" : "agent";
+    const speaker = isUser ? "You" : roleRef.current || "Agent";
 
     let changed = false;
     segments.forEach((s) => {
@@ -68,6 +76,7 @@ function App() {
           text: s.text,
           final: s.final,
           role: who,
+          speaker,
           ts: Date.now(),
         });
         changed = true;
@@ -147,6 +156,7 @@ function App() {
       await room.connect(data.url, data.token);
       await room.startAudio();
       await room.localParticipant.setMicrophoneEnabled(true);
+      room.remoteParticipants.forEach((p) => applyRole(p.metadata, p));
       setStatus("connected");
     } catch (err) {
       setStatus("error");
@@ -184,59 +194,96 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <h1>Support Line</h1>
-      <p className="hint">
-        Speak with the receptionist — they will route you to HR, the manager,
-        or your team lead.
-      </p>
-
-      {status === "idle" && (
-        <div className="controls">
-          <input
-            placeholder="Your name (optional)"
-            value={identity}
-            onChange={(e) => setIdentity(e.target.value)}
-          />
-          <button onClick={startCall}>Start call</button>
+    <div className="phone">
+      <header className="app-header">
+        <div className="brand">
+          <span className="brand-icon">
+            <HeadsetIcon />
+          </span>
+          <span className="brand-name">Support Line</span>
         </div>
-      )}
+      </header>
 
-      {status === "connecting" && <p className="status">Connecting…</p>}
-      {status === "error" && <p className="status error">{error}</p>}
-
-      {status === "connected" && (
-        <>
-          <div className="call-header">
-            <span className="role-badge">
-              {role ? `Speaking with: ${role}` : "Connecting to agent…"}
-            </span>
-            <span className="muted">{fmtDuration(duration)}</span>
-          </div>
-
-          <Visualizer stream={audioStream} audioCtx={audioCtxRef.current} />
-
-          <div className="controls">
-            {audioBlocked && (
-              <button onClick={enableAudio}>Tap to enable audio</button>
-            )}
-            <button onClick={toggleMute}>{muted ? "Unmute" : "Mute"}</button>
-            <button onClick={endCall} className="danger">
-              End call
+      <main className="screen">
+        {status === "idle" && (
+          <div className="idle">
+            <div className="logo-badge">
+              <HeadsetIcon />
+            </div>
+            <h2>Talk to our support team</h2>
+            <p className="hint">
+              Speak with the receptionist — they will route you to HR, the
+              manager, or your team lead.
+            </p>
+            <div className="eq">
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+            <input
+              placeholder="Your name (optional)"
+              value={identity}
+              onChange={(e) => setIdentity(e.target.value)}
+            />
+            <button className="primary-btn" onClick={startCall}>
+              Start call
             </button>
           </div>
+        )}
 
-          <Transcript messages={messages} />
-        </>
-      )}
+        {status === "connecting" && <p className="status">Connecting…</p>}
+        {status === "error" && <p className="status error">{error}</p>}
 
-      {status === "ended" && (
-        <Summary
-          messages={messages}
-          duration={duration}
-          onNewCall={newCall}
-        />
-      )}
+        {status === "connected" && (
+          <div className="call">
+            <div className="call-topbar">
+              <span className="role-pill">
+                <span className="pulse-dot" />
+                {role ? `Speaking with ${role}` : "Connecting to agent…"}
+              </span>
+              <span className="muted">{fmtDuration(duration)}</span>
+            </div>
+
+            <div className="agent-stage">
+              <div className="avatar">
+                <AgentIcon />
+              </div>
+              <p className="stage-label">
+                {muted ? "You are muted" : "Agent speaking…"}
+              </p>
+            </div>
+
+            <Visualizer stream={audioStream} audioCtx={audioCtxRef.current} />
+
+            {audioBlocked && (
+              <button className="primary-btn" onClick={enableAudio}>
+                Tap to enable audio
+              </button>
+            )}
+
+            <div className="call-actions">
+              <button
+                className={`icon-btn ${muted ? "active" : ""}`}
+                onClick={toggleMute}
+                title={muted ? "Unmute" : "Mute"}
+              >
+                {muted ? <MicOffIcon /> : <MicIcon />}
+              </button>
+              <button className="icon-btn danger" onClick={endCall} title="End call">
+                <EndCallIcon />
+              </button>
+            </div>
+
+            <Transcript messages={messages} />
+          </div>
+        )}
+
+        {status === "ended" && (
+          <Summary messages={messages} duration={duration} onNewCall={newCall} />
+        )}
+      </main>
     </div>
   );
 }

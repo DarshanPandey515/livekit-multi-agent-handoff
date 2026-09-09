@@ -15,8 +15,8 @@ export default function Transcript({ messages }) {
     <div className="transcript">
       {messages.map((m) => (
         <div key={m.id} className={`msg ${m.role}`}>
-          <span className="who">{m.role === "user" ? "You" : "Agent"}</span>
-          <span className="text">{m.text}</span>
+          <span className="who">{m.speaker || (m.role === "user" ? "You" : "Agent")}</span>
+          <span className="bubble">{m.text}</span>
         </div>
       ))}
       <div ref={endRef} />

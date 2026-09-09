@@ -66,6 +66,7 @@ async def entrypoint(ctx: JobContext) -> None:
         ),
 
         turn_handling=TurnHandlingOptions(
+            turn_detection=inference.TurnDetector(),
             interruption={
                 "mode": "adaptive",
                 "min_duration": 0.4,
@@ -75,6 +76,9 @@ async def entrypoint(ctx: JobContext) -> None:
                 "min_delay": 0.65,
                 "max_delay": 2.0,
                 "alpha": 0.9,
+            },
+            preemptive_generation={
+                "preemptive_tts": False,
             },
         ),
 
@@ -86,8 +90,7 @@ async def entrypoint(ctx: JobContext) -> None:
         ),
     )
 
-    # Relay the caller's speech to the room so the web UI can show a
-    # complete transcript alongside the agent's own published speech.
+    
     TranscriptRelay(session=session, room=ctx.room)
 
     await session.start(
@@ -95,7 +98,6 @@ async def entrypoint(ctx: JobContext) -> None:
         agent=agent_registry["receptionist"],
     )
 
-    # Expose the active role to web clients (updates on every transfer).
     await ctx.room.local_participant.set_metadata(json.dumps({"role": "receptionist"}))
 
     await session.generate_reply(

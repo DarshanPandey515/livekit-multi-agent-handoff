@@ -16,14 +16,16 @@ export default function Summary({ messages, duration, onNewCall }) {
         <div className="transcript">
           {messages.map((m) => (
             <div key={m.id} className={`msg ${m.role}`}>
-              <span className="who">{m.role === "user" ? "You" : "Agent"}</span>
-              <span className="text">{m.text}</span>
+              <span className="who">{m.speaker || (m.role === "user" ? "You" : "Agent")}</span>
+              <span className="bubble">{m.text}</span>
             </div>
           ))}
         </div>
       )}
 
-      <button onClick={onNewCall}>Start new call</button>
+      <button className="primary-btn" onClick={onNewCall}>
+        Start new call
+      </button>
     </div>
   );
 }
