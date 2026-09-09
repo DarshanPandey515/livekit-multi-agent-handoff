@@ -236,8 +236,6 @@ async def entrypoint(ctx: JobContext) -> None:
             voice="autumn",
         ),
         userdata=SessionState(),
-        # Groq free-tier TTS is intermittently rate-limited (429); keep retrying
-        # across the limit window instead of giving up after ~6s.
         conn_options=SessionConnectOptions(
             tts_conn_options=APIConnectOptions(max_retry=30, retry_interval=5)
         ),
