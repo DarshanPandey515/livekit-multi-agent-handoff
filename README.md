@@ -14,12 +14,19 @@ livekit-voice-agent/
 └── frontend/    # Vite + React web caller
 ```
 
-- `livekit/src/livekit_voice_agent/multi_agent.py` — the support-line worker
-  (receptionist ⇄ HR / manager / team lead).
-- `livekit/src/livekit_voice_agent/agents.py` — standalone weather-assistant
-  example.
-- `backend/` mints caller tokens and lists rooms.
-- `frontend/` is the browser caller.
+The agent package (`livekit/src/livekit_voice_agent/`) is split by concern:
+
+- `multi_agent.py` — composition root: worker server + RTC entrypoint wiring.
+- `prompts.py` — role instructions (receptionist / HR / manager / team lead).
+- `session.py` — shared `SessionState`.
+- `roles.py` — `CompanyAgent`, transfer tools (single DRY implementation),
+  and the per-role tool allow-list.
+- `transcript_relay.py` — publishes the caller's STT to the room so the web
+  UI can show a full transcript.
+- `agents.py` — standalone weather-assistant example.
+
+`backend/` mints caller tokens and lists rooms; `frontend/` is the browser
+caller (live waveform, current-agent indicator, and an end-of-call transcript).
 
 The repo-root `.env` holds the shared credentials (`LIVEKIT_*`, `GROQ_API_KEY`);
 each layer reads it.
