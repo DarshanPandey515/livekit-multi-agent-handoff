@@ -1,3 +1,6 @@
+import Transcript from "./Transcript.jsx";
+import { HeadsetIcon } from "./Icons.jsx";
+
 function fmtDuration(ms) {
   const s = Math.floor(ms / 1000);
   const m = Math.floor(s / 60);
@@ -6,26 +9,28 @@ function fmtDuration(ms) {
 
 export default function Summary({ messages, duration, onNewCall }) {
   return (
-    <div className="summary">
-      <h2>Call ended</h2>
-      <p className="hint">Duration: {fmtDuration(duration)}</p>
-
-      {messages.length === 0 ? (
-        <p className="muted">No transcript captured for this call.</p>
-      ) : (
-        <div className="transcript">
-          {messages.map((m) => (
-            <div key={m.id} className={`msg ${m.role}`}>
-              <span className="who">{m.speaker || (m.role === "user" ? "You" : "Agent")}</span>
-              <span className="bubble">{m.text}</span>
-            </div>
-          ))}
+    <div className="call-grid">
+      <section className="call-panel">
+        <div className="agent-stage">
+          <div className="avatar ended">
+            <HeadsetIcon />
+          </div>
+          <p className="stage-label">Call ended</p>
         </div>
-      )}
+        <p className="call-duration">Duration: {fmtDuration(duration)}</p>
+        <button className="primary-btn" onClick={onNewCall}>
+          Start new call
+        </button>
+      </section>
 
-      <button className="primary-btn" onClick={onNewCall}>
-        Start new call
-      </button>
+      <section className="call-panel transcript-panel">
+        <h3 className="panel-title">Transcript</h3>
+        {messages.length === 0 ? (
+          <p className="muted">No transcript captured for this call.</p>
+        ) : (
+          <Transcript messages={messages} />
+        )}
+      </section>
     </div>
   );
 }

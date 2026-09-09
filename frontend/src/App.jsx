@@ -194,14 +194,28 @@ function App() {
   }
 
   return (
-    <div className="phone">
+    <div className={`app ${status === "idle" ? "app--idle" : "app--call"}`}>
       <header className="app-header">
         <div className="brand">
-          <span className="brand-icon">
-            <HeadsetIcon />
-          </span>
+          <div className="eq" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
           <span className="brand-name">Support Line</span>
         </div>
+
+        {status === "connected" && (
+          <div className="header-status">
+            <span className="role-pill">
+              <span className="pulse-dot" />
+              {role ? `Speaking with ${role}` : "Connecting to agent…"}
+            </span>
+            <span className="muted">{fmtDuration(duration)}</span>
+          </div>
+        )}
       </header>
 
       <main className="screen">
@@ -215,13 +229,6 @@ function App() {
               Speak with the receptionist — they will route you to HR, the
               manager, or your team lead.
             </p>
-            <div className="eq">
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
             <input
               placeholder="Your name (optional)"
               value={identity}
@@ -233,50 +240,56 @@ function App() {
           </div>
         )}
 
-        {status === "connecting" && <p className="status">Connecting…</p>}
         {status === "error" && <p className="status error">{error}</p>}
 
-        {status === "connected" && (
-          <div className="call">
-            <div className="call-topbar">
-              <span className="role-pill">
-                <span className="pulse-dot" />
-                {role ? `Speaking with ${role}` : "Connecting to agent…"}
-              </span>
-              <span className="muted">{fmtDuration(duration)}</span>
-            </div>
-
-            <div className="agent-stage">
-              <div className="avatar">
-                <AgentIcon />
+        {(status === "connecting" || status === "connected") && (
+          <div className="call-grid">
+            <section className="call-panel">
+              <div className="agent-stage">
+                <div className={`avatar ${status === "connecting" ? "pulse-avatar" : ""}`}>
+                  <AgentIcon />
+                </div>
+                <p className="stage-label">
+                  {status === "connecting"
+                    ? "Connecting to the support agent…"
+                    : muted
+                    ? "You are muted"
+                    : "Agent speaking…"}
+                </p>
               </div>
-              <p className="stage-label">
-                {muted ? "You are muted" : "Agent speaking…"}
-              </p>
-            </div>
 
-            <Visualizer stream={audioStream} audioCtx={audioCtxRef.current} />
+              <Visualizer stream={audioStream} audioCtx={audioCtxRef.current} />
 
-            {audioBlocked && (
-              <button className="primary-btn" onClick={enableAudio}>
-                Tap to enable audio
-              </button>
-            )}
+              {status === "connected" && audioBlocked && (
+                <button className="primary-btn" onClick={enableAudio}>
+                  Tap to enable audio
+                </button>
+              )}
 
-            <div className="call-actions">
-              <button
-                className={`icon-btn ${muted ? "active" : ""}`}
-                onClick={toggleMute}
-                title={muted ? "Unmute" : "Mute"}
-              >
-                {muted ? <MicOffIcon /> : <MicIcon />}
-              </button>
-              <button className="icon-btn danger" onClick={endCall} title="End call">
-                <EndCallIcon />
-              </button>
-            </div>
+              {status === "connected" && (
+                <div className="call-actions">
+                  <button
+                    className={`icon-btn ${muted ? "active" : ""}`}
+                    onClick={toggleMute}
+                    title={muted ? "Unmute" : "Mute"}
+                  >
+                    {muted ? <MicOffIcon /> : <MicIcon />}
+                  </button>
+                  <button className="icon-btn danger" onClick={endCall} title="End call">
+                    <EndCallIcon />
+                  </button>
+                </div>
+              )}
+            </section>
 
-            <Transcript messages={messages} />
+            <section className="call-panel transcript-panel">
+              <h3 className="panel-title">Transcript</h3>
+              {status === "connecting" ? (
+                <p className="muted">Waiting for the agent to join…</p>
+              ) : (
+                <Transcript messages={messages} />
+              )}
+            </section>
           </div>
         )}
 
