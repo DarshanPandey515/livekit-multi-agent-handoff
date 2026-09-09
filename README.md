@@ -1,6 +1,6 @@
 # livekit-voice-agent
 
-A support line that answers with a voice agent: a receptionist greets callers and
+A voice-agent office assistant: a receptionist greets callers and
 transfers them to HR, the manager, or the team lead. Built to learn the
 [LiveKit Agents](https://docs.livekit.io/agents/) framework (voice agents using
 Groq for STT/LLM/TTS). Work in progress.

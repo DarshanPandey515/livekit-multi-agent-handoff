@@ -40,7 +40,7 @@ function App() {
   );
 
   function applyRole(metadata, participant) {
-    // The agent is the only remote participant in a support call, so any
+    // The agent is the only remote participant in an office call, so any
     // participant metadata carrying a known role is the agent's.
     if (!metadata) return;
     try {
@@ -204,7 +204,7 @@ function App() {
             <i />
             <i />
           </div>
-          <span className="brand-name">Support Line</span>
+          <span className="brand-name">Office Assistant</span>
         </div>
 
         {status === "connected" && (
@@ -224,10 +224,10 @@ function App() {
             <div className="logo-badge">
               <HeadsetIcon />
             </div>
-            <h2>Talk to our support team</h2>
+            <h2>Talk to your office team</h2>
             <p className="hint">
-              Speak with the receptionist — they will route you to HR, the
-              manager, or your team lead.
+              Call the front desk — they'll connect you to HR, your manager,
+              or your team lead.
             </p>
             <input
               placeholder="Your name (optional)"
@@ -251,7 +251,7 @@ function App() {
                 </div>
                 <p className="stage-label">
                   {status === "connecting"
-                    ? "Connecting to the support agent…"
+                    ? "Connecting to the office assistant…"
                     : muted
                     ? "You are muted"
                     : "Agent speaking…"}
