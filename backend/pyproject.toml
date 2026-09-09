@@ -1,0 +1,13 @@
+[project]
+name = "support-backend"
+version = "0.1.0"
+description = "Async Django DRF backend for the LiveKit support voice assistant"
+requires-python = ">=3.12"
+dependencies = [
+    "adrf>=0.1.9",
+    "django>=5.2",
+    "djangorestframework>=3.16",
+    "livekit-api>=1.2",
+    "python-dotenv>=1.2",
+    "uvicorn>=0.30",
+]
