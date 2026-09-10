@@ -19,10 +19,10 @@ class TranscriptRelay:
         self._room = room
         self._mic_sid: str | None = None
 
-        room.on("track_published", self._on_track_published)
-        session.on("user_input_transcribed", self._on_user_transcript)
+        room.on("track_published", self.on_track_published)
+        session.on("user_input_transcribed", self.on_user_transcript)
 
-    def _on_track_published(
+    def on_track_published(
         self,
         track: rtc.RemoteTrackPublication,
         _participant: rtc.RemoteParticipant,
@@ -30,13 +30,13 @@ class TranscriptRelay:
         if track.source == rtc.TrackSource.SOURCE_MICROPHONE and self._mic_sid is None:
             self._mic_sid = track.sid
 
-    def _on_user_transcript(self, ev: UserInputTranscribedEvent) -> None:
+    def on_user_transcript(self, ev: UserInputTranscribedEvent) -> None:
         if not ev.is_final or not ev.transcript.strip():
             return
 
-        asyncio.create_task(self._publish(ev))
+        asyncio.create_task(self.publish(ev))
 
-    async def _publish(self, ev: UserInputTranscribedEvent) -> None:
+    async def publish(self, ev: UserInputTranscribedEvent) -> None:
         user = next(
             (p for p in self._room.remote_participants.values() if not p.is_local),
             None,

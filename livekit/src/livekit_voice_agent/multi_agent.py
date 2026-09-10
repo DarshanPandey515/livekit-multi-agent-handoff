@@ -1,18 +1,6 @@
-"""Support-line voice worker: composition root (server + entrypoint wiring).
-
-Business components live in this package:
-    prompts.py          role instructions
-    session.py          shared session state
-    roles.py            agent classes, transfer tools, role registry
-    transcript_relay.py caller speech relay for the web transcript
-"""
-
 from __future__ import annotations
-
 import json
-
 from dotenv import load_dotenv
-
 from livekit import agents
 from livekit.agents import (
     AgentServer,
@@ -24,7 +12,6 @@ from livekit.agents import (
 )
 from livekit.agents.voice.agent_session import SessionConnectOptions
 from livekit.plugins import groq
-
 from .roles import build_agents
 from .session import SessionState
 from .transcript_relay import TranscriptRelay
@@ -36,10 +23,6 @@ server = AgentServer()
 
 @server.rtc_session()
 async def entrypoint(ctx: JobContext) -> None:
-    """
-    LiveKit RTC entrypoint.
-    """
-
     agent_registry = build_agents()
 
     state = SessionState(
