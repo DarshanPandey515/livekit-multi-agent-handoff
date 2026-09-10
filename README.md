@@ -5,6 +5,10 @@ transfers them to HR, the manager, or the team lead. Built to learn the
 [LiveKit Agents](https://docs.livekit.io/agents/) framework (voice agents using
 Groq for STT/LLM/TTS). Work in progress.
 
+
+<img width="1109" height="525" alt="cropped" src="https://github.com/user-attachments/assets/ca7f5616-b235-422d-b122-1761def5ec69" />
+
+
 ## How it works
 
 The web app connects to a LiveKit room, a worker agent joins, and the caller
